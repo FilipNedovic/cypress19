@@ -55,17 +55,27 @@ describe("register tests with POM", () => {
       .and("have.text", "The terms and conditions must be accepted.");
   });
 
-  it("register with valid data", () => {
+  it.only("register with valid data", () => {
+    cy.intercept({
+      method: "POST",
+      // url: Cypress.env("apiUrl") + "/auth/register"
+      url: `${Cypress.env("apiUrl")}/auth/register`,
+    }).as("validRegister");
+
     registerPage.registerWithValidData(
       userData.randomFirstName,
       userData.randomLastName,
       userData.randomEmail,
       userData.randomPassword
     );
+    cy.wait("@validRegister").then((interception) => {
+      expect(interception.response.statusCode).eq(200);
+      expect(interception.response.statusMessage).eq("OK");
+    });
     cy.url().should("not.include", "/register");
   });
 
-  it.only("register via backend", () => {
+  it("register via backend", () => {
     cy.registerViaBackend(
       userData.randomFirstName,
       userData.randomLastName,
